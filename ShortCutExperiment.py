@@ -8,6 +8,69 @@ def smooth(rewards, window=10):
     return np.convolve(rewards, np.ones(window) / window, mode='valid')
 
 
+def save_greedy_policy(agent, env, filename):
+    """Save the greedy policy as a PNG image."""
+    arrow_map = {0: '↑', 1: '↓', 2: '←', 3: '→'}
+    import numpy as np
+    
+    grid = []
+    for y in range(12):
+        row = []
+        for x in range(12):
+            state = y * 12 + x
+            cell = env.s[y, x]
+            if cell == 'C':
+                row.append('C')
+            elif cell == 'G':
+                row.append('G')
+            else:
+                best_action = np.argmax(agent.Q[state])
+                row.append(arrow_map[best_action])
+        grid.append(row)
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.set_xlim(0, 12)
+    ax.set_ylim(0, 12)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    for y in range(12):
+        for x in range(12):
+            symbol = grid[y][x]
+            # flip y so row 0 is at top
+            display_y = 11 - y
+
+            if symbol == 'C':
+                color = '#ff4444'
+            elif symbol == 'G':
+                color = '#44bb44'
+            else:
+                color = '#f5f5f5'
+
+            rect = plt.Rectangle([x, display_y], 1, 1,
+                                   facecolor=color, edgecolor='#cccccc', linewidth=0.5)
+            ax.add_patch(rect)
+            ax.text(x + 0.5, display_y + 0.5, symbol,
+                    ha='center', va='center', fontsize=14,
+                    color='white' if symbol in ['C', 'G'] else '#333333')
+
+    # mark start positions
+    for (sy, sx) in [(1, 2), (9, 2)]:
+        display_y = 11 - sy
+        rect = plt.Rectangle([sx, display_y], 1, 1,
+                               facecolor='#4488ff', edgecolor='#cccccc', linewidth=0.5)
+        ax.add_patch(rect)
+        ax.text(sx + 0.5, display_y + 0.5, grid[sy][sx],
+                ha='center', va='center', fontsize=14, color='white')
+
+    plt.title(filename.replace('.png', '').replace('_', ' '), fontsize=12)
+    plt.tight_layout()
+    plt.savefig(filename, dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"Saved: {filename}")
+
+
+
 def run_repetitions(agent_type, n_rep, n_episodes, alpha=0.1, epsilon=0.1, n=1):
     all_returns = []  # will hold one list per repetition
 
@@ -64,6 +127,7 @@ agent = QLearningAgent(n_actions=env.action_size(), n_states=env.state_size(),
 agent.train(env, 10000)
 print("Greedy policy after 10000 episodes:")
 env.render_greedy(agent.Q)
+save_greedy_policy(agent, env, "q1b_greedy_policy.png")
 
 print("\nRunning 100 repetitions x 1000 episodes...")
 avg_returns_q = run_repetitions('qlearning', n_rep=100, n_episodes=1000,
@@ -118,6 +182,7 @@ agent = SARSAAgent(n_actions=env.action_size(), n_states=env.state_size(),
 agent.train(env, n_episodes=10000)
 print("Greedy policy (SARSA):")
 env.render_greedy(agent.Q)
+save_greedy_policy(agent, env, "q2b_sarsa_greedy_policy.png")
 
 
 #  Part B: 100 repetitions, plot learning curve 
@@ -181,6 +246,7 @@ agent_q = QLearningAgent(n_actions=env_windy.action_size(),
 agent_q.train(env_windy, n_episodes=10000)
 print("Greedy policy - Q-Learning (windy):")
 env_windy.render_greedy(agent_q.Q)
+save_greedy_policy(agent_q, env_windy, "q3_qlearning_windy_greedy_policy.png")
 
 
 # SARSA in windy environment
@@ -193,6 +259,7 @@ agent_s = SARSAAgent(n_actions=env_windy2.action_size(),
 agent_s.train(env_windy2, n_episodes=10000)
 print("Greedy policy - SARSA (windy):")
 env_windy2.render_greedy(agent_s.Q)
+save_greedy_policy(agent_s, env_windy2, "q3_sarsa_windy_greedy_policy.png")
 
 
 
@@ -207,6 +274,7 @@ agent = ExpectedSARSAAgent(n_actions=env.action_size(), n_states=env.state_size(
 agent.train(env, n_episodes=10000)
 print("Greedy policy (Expected SARSA):")
 env.render_greedy(agent.Q)
+save_greedy_policy(agent, env, "q4b_expectedsarsa_greedy_policy.png")
 
 
 # partB: 100 repetitions, compare all 3 agents
@@ -268,6 +336,7 @@ agent = nStepSARSAAgent(n_actions=env.action_size(), n_states=env.state_size(),
 agent.train(env, n_episodes=10000)
 print("Greedy policy (n-step SARSA, n=5):")
 env.render_greedy(agent.Q)
+save_greedy_policy(agent, env, "q5b_nstep_sarsa_greedy_policy.png")
 
 # Question 5c:
 
