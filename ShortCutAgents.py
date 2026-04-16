@@ -28,7 +28,6 @@ class QLearningAgent(object):
             td_target = reward + self.gamma * np.max(self.Q[next_state])
         td_error = td_target - self.Q[state, action]
         self.Q[state, action] += self.alpha * td_error
-
     
     def train(self, env, n_episodes):
         # TO DO: Implement the agent loop that trains for n_episodes. 
@@ -57,8 +56,8 @@ class SARSAAgent(object):
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
-        self.Q = np.zeros((n_states, n_actions))
         # TO DO: Initialize variables if necessary
+        self.Q = np.zeros((n_states, n_actions))
         
     def select_action(self, state):
         # TO DO: Implement policy
@@ -77,7 +76,7 @@ class SARSAAgent(object):
         td_error = td_target - self.Q[state, action]
         self.Q[state, action] += self.alpha * td_error
 
-    def train(self,env, n_episodes):
+    def train(self, env, n_episodes):
         # TO DO: Implement the agent loop that trains for n_episodes. 
         # Return a vector with the the cumulative reward (=return) per episode
         episode_returns = []
@@ -92,7 +91,7 @@ class SARSAAgent(object):
                 if not env.done():
                     next_action = self.select_action(next_state)
                 else:
-                    next_action = 0
+                    next_action = None
                 self.update(state, action, reward, next_state, next_action, env.done())
                 state = next_state
                 action = next_action
@@ -109,8 +108,8 @@ class ExpectedSARSAAgent(object):
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
-        self.Q = np.zeros((n_states, n_actions))
         # TO DO: Initialize variables if necessary
+        self.Q = np.zeros((n_states, n_actions))
         
     def select_action(self, state):
         # TO DO: Implement policy
@@ -121,7 +120,7 @@ class ExpectedSARSAAgent(object):
         return action
     
     def expected_value(self, state):
-         # Expected value under epsilon-greedy policy
+        # Expected value under epsilon-greedy policy
         best_action = np.argmax(self.Q[state])
         probs = np.ones(self.n_actions) * (self.epsilon / self.n_actions)
         probs[best_action] += (1 - self.epsilon)
@@ -166,10 +165,9 @@ class nStepSARSAAgent(object):
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
-        self.Q = np.zeros((n_states, n_actions))
         # TO DO: Initialize variables if necessary
-    
-
+        self.Q = np.zeros((n_states, n_actions))
+        
     def select_action(self, state):
         # TO DO: Implement policy
         if np.random.random() < self.epsilon:
@@ -187,7 +185,7 @@ class nStepSARSAAgent(object):
             G += (self.gamma ** n) * self.Q[states[-1], actions[-1]]
         td_error = G - self.Q[states[0], actions[0]]
         self.Q[states[0], actions[0]] += self.alpha * td_error
-
+    
     def train(self, env, n_episodes):
         # TO DO: Implement the agent loop that trains for n_episodes. 
         # Return a vector with the the cumulative reward (=return) per episode
